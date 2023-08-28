@@ -77,7 +77,7 @@ for fname in [fnamei, fnameii, fnameiii]:
     print(saved_cols == cols)
     saved_cols = cols
     print('end loading')
-1/0
+# 1/0
 
 # df = pd.read_csv(dir + fnamei)
 # df = pd.read_csv(dir + fnameie, header=[0,1])
@@ -110,6 +110,7 @@ def check_tot(df):
     print('inside check tot')
 
     print(len(df.index))
+    count = 0
     for i in range(0, len(df.index)):
         # row = df[i:i+1]
         # print(i, row)
@@ -118,10 +119,15 @@ def check_tot(df):
         # print(i, row)
 
         # print([i for i in row])
-        print(row[1], 'data and sum', sum(row[2:]), sum(row[2:])*2, row[1:])
+        # print(row[1], 'data and sum', sum(row[2:]), sum(row[2:])*2, row[1:])
+        print(row[1], 'data and sum', row[1]-sum(row[2:]))
+        if row[1] < sum(row[2:]):
+            count += 1
+            print('\n'*5, 'count', count)
         # print(row[1], 'sum', sum(row[2:]), sum(row[2:])*2,)
-        print(row[1], 'explain', [sum(row[2:i]) for i in range(2+1, len(row))])
-        break
+        # print(row[1], 'explain', [sum(row[2:i]) for i in range(2+1, len(row))])
+        # break
+    print(count, 'count')
 
     return
 
