@@ -1,0 +1,2 @@
+
+filename: data/NEG_profil_Ni_VI_AE_typoless.txt, 'total' included: False, degree: 2, threshold: 0.1, date: 2023-08-29 09:00:45.459584 
