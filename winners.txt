@@ -1,0 +1,9 @@
+untot:
+    lin: thr 10,  mse: 1.3690e+05, mse_sim: 2.0143e+08
+    threshold: 3, mse: 1.3690e+05, mse_sim: 2.0143e+08, nice eq
+    threshold: 3.5 nice eq
+    # threshold = 0.923  # mse: 4.7354e+04, mse_sim: 2.0143e+08
+    thr 0: threshold = 0  # mse: 9.9612e+03, mse_sim: inf
+
+    deg 2:
+        thr

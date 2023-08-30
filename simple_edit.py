@@ -1,6 +1,8 @@
 import datetime
 import os
 
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error
 import pysindy as ps
 import numpy as np
 # print(pysindy.__version__, sys.version)
@@ -41,55 +43,63 @@ shift = 1   # ignored 'total' column
 # shift = 6
 X = np.array(df[df.columns[1+shift:scale]])
 
+# 4 * 10^4 lstmse at 0.923
+# 1 * 10^4 lstmse at 0
+threshold = 0  # mse: 9.9612e+03, mse_sim: inf
+# threshold = 0.923  # mse: 4.7354e+04, mse_sim: 2.0143e+08
 threshold = 1
-threshold = 2
+# # threshold = 2
 threshold = 2.24
-# threshold = 3
+threshold = 3
+# threshold = 3.5
+
 # threshold = 4
+# threshold = 5
+# threshold = 6
 # threshold = 8
-# threshold = 9
+# # threshold = 9
 # threshold = 10
-threshold = 100
+# threshold = 100
 
-# # # threshold = 1e-1
-# # threshold = 5e-2
-# # threshold = 4e-2
-# # threshold = 3e-2
-# # threshold = 2.5e-2
-# # threshold = 2e-2
-# # threshold = 1e-2
-# # threshold = 0.001
-# # threshold = 0.0012005   # good
-# # threshold = 0.0013005   # good
-# #
-# # # threshold = 0.0014
-# # # threshold = 0.00146
-# # # threshold = 0.00146104  # good
-# # # threshold = 0.00146504  # good
-# # # threshold = 0.00146604  # good
-# # # threshold = 0.0014665  # bad
-# # # threshold = 0.00146704  # bad
-# # # threshold = 0.00146804  # bad
-# # # threshold = 0.00147
-# # # threshold = 0.0015005   # zero
-# #
-# # threshold = 1e-3  # interesting output
-# threshold = 1e-4
-# # threshold = 2e-5
-# # threshold = 1.52e-5
-# # threshold = 1e-5
-# # # threshold = 1e-6
-# # # # threshold = 1e-7
-# # # threshold = 1e-8
-# # # threshold = 1e-9
-
-# # threshold = 1.5e-10
-# # threshold = 2e-10
-# # threshold = 3e-10
-# # threshold = 5e-10
-# threshold = 1e-10
-# threshold = 1e-12
-# threshold = 1e-15
+# # # # threshold = 1e-1
+# # # threshold = 5e-2
+# # # threshold = 4e-2
+# # # threshold = 3e-2
+# # # threshold = 2.5e-2
+# # # threshold = 2e-2
+# # # threshold = 1e-2
+# # # threshold = 0.001
+# # # threshold = 0.0012005   # good
+# # # threshold = 0.0013005   # good
+# # #
+# # # # threshold = 0.0014
+# # # # threshold = 0.00146
+# # # # threshold = 0.00146104  # good
+# # # # threshold = 0.00146504  # good
+# # # # threshold = 0.00146604  # good
+# # # # threshold = 0.0014665  # bad
+# # # # threshold = 0.00146704  # bad
+# # # # threshold = 0.00146804  # bad
+# # # # threshold = 0.00147
+# # # # threshold = 0.0015005   # zero
+# # #
+# # # threshold = 1e-3  # interesting output
+# # threshold = 1e-4
+# # # threshold = 2e-5
+# # # threshold = 1.52e-5
+# # # threshold = 1e-5
+# # # # threshold = 1e-6
+# # # # # threshold = 1e-7
+# # # # threshold = 1e-8
+# # # # threshold = 1e-9
+#
+# # # threshold = 1.5e-10
+# # # threshold = 2e-10
+# # # threshold = 3e-10
+# # # threshold = 5e-10
+# # threshold = 1e-10
+# # threshold = 1e-12
+# # threshold = 1e-15
 
 degree = 1
 # degree = 2
@@ -120,9 +130,38 @@ sys.stdout = tmp
 eqs = my_result.getvalue()
 print(eqs)
 
+print(meta)
+
+
+x_train = X
+# x_test = x_train[:100, :]
+x_test = x_train
+t_test = t
+dt = np.mean(t[1:] - t[:-1])
+# rmse = mean_squared_error(x_train, np.zeros(x_train.shape), squared=False)
+mse = model.score(x_test, t=dt, metric=mean_squared_error)
+
+
+# print('mse lstsq', i, 'done')
+sim_success = True
+try:
+    x_test_sim = model.simulate(x_test[0, :], t_test, integrator="odeint")
+except:
+    sim_success = False
+    mse_sim = np.inf
+if sim_success:
+    if np.any(x_test_sim > 1e4):
+        x_test_sim = 1e4
+    mse_sim = np.mean((x_test - x_test_sim) ** 2)
+
+printmses = f'mse: {mse:.4e}, mse_sim: {mse_sim:.4e}'
+print(printmses)
 
 # print(sum(abs(model.coefficients()[0, :])>0))
 
+
+
+# MAKEFILE = False
 if MAKEFILE:
 
     vi = fname.split('_')[3]
@@ -132,7 +171,9 @@ if MAKEFILE:
     print(f'results written to {outpath}!!')
     f = open(outpath, 'w')
     f.write(meta + '\n')
-    f.write(eqs)
+    # print(printmses)
+    f.write(eqs + '\n')
+    f.write(printmses + '\n')
     f.close()
 
     import pickle
@@ -143,117 +184,145 @@ if MAKEFILE:
 
 # model.print(lhs=["total"])
 
-
-# model.simulate(X, t=t)
-traj = model.simulate(X[0, :], t=t)
-print(traj.shape)
-print(sum(traj - X)**2)
-print(np.sqrt(sum(sum((traj - X)**2))/(X.shape[0]*X.shape[1])))
-print(len(t))
-
-
-
-from scipy.integrate import solve_ivp
-from pysindy.utils import lorenz, lorenz_control, enzyme
-
-np.random.seed(100)
-
-# Initialize integrator keywords for solve_ivp to replicate the odeint defaults
-integrator_keywords = {}
-integrator_keywords['rtol'] = 1e-12
-integrator_keywords['method'] = 'LSODA'
-integrator_keywords['atol'] = 1e-12
-
-dt = 0.002
-
-t_train = np.arange(0, 10, dt)
-x0_train = [-8, 8, 27]
-t_train_span = (t_train[0], t_train[-1])
-x_train = solve_ivp(
-    lorenz, t_train_span, x0_train, t_eval=t_train, **integrator_keywords
-).y.T
-
-t_test = np.arange(0, 15, dt)
-t_test_span = (t_test[0], t_test[-1])
-x0_test = np.array([8, 7, 15])
-x_test = solve_ivp(
-    lorenz, t_test_span, x0_test, t_eval=t_test, **integrator_keywords
-).y.T
-# Instantiate and fit the SINDy model
-feature_names = ['x', 'y', 'z']
-sparse_regression_optimizer = ps.STLSQ(threshold=0)  # default is lambda = 0.1
-model = ps.SINDy(feature_names=feature_names, optimizer=sparse_regression_optimizer)
-model.fit(x_train, t=dt)
-model.print()
-
-# Make coefficient plot for threshold scan
-
-import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error
-
-def plot_pareto(coefs, opt, model, threshold_scan, x_test, t_test):
-    dt = t_test[1] - t_test[0]
-    mse = np.zeros(len(threshold_scan))
-    mse_sim = np.zeros(len(threshold_scan))
-    for i in range(len(threshold_scan)):
-        opt.coef_ = coefs[i]
-        mse[i] = model.score(x_test, t=dt, metric=mean_squared_error)
-        sim_success = True
-        try:
-            x_test_sim = model.simulate(x_test[0, :], t_test, integrator="odeint")
-        except:
-            sim_success = False
-            mse_sim[i] = np.inf
-        if sim_success:
-            if np.any(x_test_sim > 1e4):
-                x_test_sim = 1e4
-            mse_sim[i] = np.sum((x_test - x_test_sim) ** 2)
-        else:
-            mse_sim[i] = np.inf
-    plt.figure()
-    plt.semilogy(threshold_scan, mse, "bo")
-    plt.semilogy(threshold_scan, mse, "b")
-    plt.ylabel(r"$\dot{X}$ RMSE", fontsize=20)
-    plt.xlabel(r"$\lambda$", fontsize=20)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-    plt.grid(True)
-    plt.figure()
-    plt.semilogy(threshold_scan, mse_sim, "bo")
-    plt.semilogy(threshold_scan, mse_sim, "b")
-    plt.ylabel(r"$\dot{X}$ RMSE", fontsize=20)
-    plt.xlabel(r"$\lambda$", fontsize=20)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-    plt.grid(True)
-    print('here i')
-    plt.show()
-
-# plot_pareto()
+    # # model.simulate(X, t=t)
+    # traj = model.simulate(X[0, :], t=t)
+    # print(traj.shape)
+    # print(sum(traj - X)**2)
+    # print(np.sqrt(sum(sum((traj - X)**2))/(X.shape[0]*X.shape[1])))
+    # print(len(t))
+    #
 
 
-threshold_scan = np.linspace(0, 1.0, 10)
-coefs = []
-# x_train = X
-# x_test = x_train
-# t_test = t
-# dt = np.mean(t[1:] - t[:-1])
-rmse = mean_squared_error(x_train, np.zeros(x_train.shape), squared=False)
-# x_train_added_noise = x_train + np.random.normal(0, rmse / 10.0,  x_train.shape)
-x_train_added_noise = x_train
-for i, threshold in enumerate(threshold_scan):
-    sparse_regression_optimizer = ps.STLSQ(threshold=threshold)
-    model = ps.SINDy(feature_names=df.columns[1 + shift:scale],
-                     feature_library=ps.PolynomialLibrary(degree=degree),
-                     optimizer=sparse_regression_optimizer)
-                     # optimizer=ps.STLSQ(threshold=threshold))
-    # model = ps.SINDy(feature_names=feature_names,
-    #                  optimizer=sparse_regression_optimizer)
-    model.fit(x_train_added_noise, t=dt, quiet=True)
-    coefs.append(model.coefficients())
+hyperparametertuning = True
+hyperparametertuning = False
+if hyperparametertuning:
 
-plot_pareto(coefs, sparse_regression_optimizer, model,
-            threshold_scan, x_test, t_test)
+    from scipy.integrate import solve_ivp
+    from pysindy.utils import lorenz, lorenz_control, enzyme
+
+    np.random.seed(100)
+
+    # Initialize integrator keywords for solve_ivp to replicate the odeint defaults
+    integrator_keywords = {}
+    integrator_keywords['rtol'] = 1e-12
+    integrator_keywords['method'] = 'LSODA'
+    integrator_keywords['atol'] = 1e-12
+
+    dt = 0.002
+
+    t_train = np.arange(0, 10, dt)
+    x0_train = [-8, 8, 27]
+    t_train_span = (t_train[0], t_train[-1])
+    x_train = solve_ivp(
+        lorenz, t_train_span, x0_train, t_eval=t_train, **integrator_keywords
+    ).y.T
+
+    t_test = np.arange(0, 15, dt)
+    t_test_span = (t_test[0], t_test[-1])
+    x0_test = np.array([8, 7, 15])
+    x_test = solve_ivp(
+        lorenz, t_test_span, x0_test, t_eval=t_test, **integrator_keywords
+    ).y.T
+
+    # print(x_train.shape, t_train.shape, x_test.shape, t_test.shape)
+    # 1/0
+    # Instantiate and fit the SINDy model
+    feature_names = ['x', 'y', 'z']
+    sparse_regression_optimizer = ps.STLSQ(threshold=0)  # default is lambda = 0.1
+    model = ps.SINDy(feature_names=feature_names, optimizer=sparse_regression_optimizer)
+    model.fit(x_train, t=dt)
+    model.print()
+
+    # Make coefficient plot for threshold scan
 
 
-plt.plot(t, t, 'k--')
+    def plot_pareto(coefs, opt, model, threshold_scan, x_test, t_test):
+        dt = t_test[1] - t_test[0]
+        mse = np.zeros(len(threshold_scan))
+        mse_sim = np.zeros(len(threshold_scan))
+        for i in range(len(threshold_scan)):
+            opt.coef_ = coefs[i]
+            mse[i] = model.score(x_test, t=dt, metric=mean_squared_error)
+            print('mse lstsq', i, 'done')
+            sim_success = True
+            try:
+                x_test_sim = model.simulate(x_test[0, :], t_test, integrator="odeint")
+            except:
+                sim_success = False
+                mse_sim[i] = np.inf
+            if sim_success:
+                if np.any(x_test_sim > 1e4):
+                    x_test_sim = 1e4
+                mse_sim[i] = np.sum((x_test - x_test_sim) ** 2)
+            else:
+                mse_sim[i] = np.inf
+            print('mse sim', i, 'done')
+
+        plt.figure()
+        plt.semilogy(threshold_scan, mse, "bo")
+        plt.semilogy(threshold_scan, mse, "b")
+        time = str(datetime.datetime.now()) + 'mse lstsq'
+        plt.title(time, fontsize=20)
+        plt.ylabel(r"$\dot{X}$ RMSE", fontsize=20)
+        plt.xlabel(r"$\lambda$ 0", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.grid(True)
+
+        plt.figure()
+        plt.semilogy(threshold_scan, mse_sim, "bo")
+        plt.semilogy(threshold_scan, mse_sim, "b")
+        time = str(datetime.datetime.now()) + 'mse sim'
+        plt.title(time, fontsize=20)
+        plt.ylabel(r"$\dot{X}$ RMSE sim", fontsize=20)
+        plt.xlabel(r"$\lambda$ sim", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.grid(True)
+        print('here i')
+        plt.show()
+
+    # plot_pareto()
+
+
+    # threshold_scan = np.linspace(0, 1.0, 10)[:2002]
+    threshold_scan = np.linspace(0.9, 1, 10)[:2002]
+    threshold_scan = np.linspace(0.0, 0.1, 10)[:2002]
+    threshold_scan = np.linspace(0.0, 0.000000001, 4)[:2002]
+    # threshold_scan = np.linspace(0.922, 0.924, 50)[:2002]
+    coefs = []
+    x_train = X
+    # x_test = x_train[:100, :]
+    x_test = x_train
+    t_test = t
+    dt = np.mean(t[1:] - t[:-1])
+    rmse = mean_squared_error(x_train, np.zeros(x_train.shape), squared=False)
+    # x_train_added_noise = x_train + np.random.normal(0, rmse / 10.0,  x_train.shape)
+    x_train_added_noise = x_train
+    for i, threshold in enumerate(threshold_scan):
+        # Instantiate and fit the SINDy model
+        feature_names = ['x', 'y', 'z']
+        # sparse_regression_optimizer = ps.STLSQ(threshold=0)  # default is lambda = 0.1
+        # model.fit(x_train, t=dt)
+
+        sparse_regression_optimizer = ps.STLSQ(threshold=threshold)
+        # model = ps.SINDy(feature_names=feature_names, optimizer=sparse_regression_optimizer)
+        model = ps.SINDy(feature_names=df.columns[1 + shift:scale],
+                         feature_library=ps.PolynomialLibrary(degree=degree),
+                         optimizer=sparse_regression_optimizer)
+        # model = ps.SINDy(feature_names=feature_names,
+        #                  optimizer=sparse_regression_optimizer)
+        model.fit(x_train_added_noise, t=dt, quiet=True)
+        print(f'fitted: {i}, with thr: {threshold}')
+
+
+        coefs.append(model.coefficients())
+
+    print('after loop')
+    plot_pareto(coefs, sparse_regression_optimizer, model,
+                threshold_scan, x_test, t_test)
+
+
+    plt.plot(t, t, 'k--')
+    # 4 * 10^4 lstmse at 0.923
+    # 1 * 10^4 lstmse at 0
