@@ -217,46 +217,46 @@ hyperparametertuning = True
 # hyperparametertuning = False
 if hyperparametertuning:
 
-    lorenz = True
-    lorenz = False
-    if lorenz:
-        from scipy.integrate import solve_ivp
-        from pysindy.utils import lorenz, lorenz_control, enzyme
-
-        np.random.seed(100)
-
-        # Initialize integrator keywords for solve_ivp to replicate the odeint defaults
-        integrator_keywords = {}
-        integrator_keywords['rtol'] = 1e-12
-        integrator_keywords['method'] = 'LSODA'
-        integrator_keywords['atol'] = 1e-12
-
-        dt = 0.002
-
-        t_train = np.arange(0, 10, dt)
-        x0_train = [-8, 8, 27]
-        t_train_span = (t_train[0], t_train[-1])
-        x_train = solve_ivp(
-            lorenz, t_train_span, x0_train, t_eval=t_train, **integrator_keywords
-        ).y.T
-
-        t_test = np.arange(0, 15, dt)
-        t_test_span = (t_test[0], t_test[-1])
-        x0_test = np.array([8, 7, 15])
-        x_test = solve_ivp(
-            lorenz, t_test_span, x0_test, t_eval=t_test, **integrator_keywords
-        ).y.T
-
-        # print(x_train.shape, t_train.shape, x_test.shape, t_test.shape)
-        # 1/0
-        # Instantiate and fit the SINDy model
-        feature_names = ['x', 'y', 'z']
-        sparse_regression_optimizer = ps.STLSQ(threshold=0)  # default is lambda = 0.1
-        model = ps.SINDy(feature_names=feature_names, optimizer=sparse_regression_optimizer)
-        model.fit(x_train, t=dt)
-        model.print()
-
-        # Make coefficient plot for threshold scan
+    # lorenz = True
+    # lorenz = False
+    # if lorenz:
+    #     from scipy.integrate import solve_ivp
+    #     from pysindy.utils import lorenz, lorenz_control, enzyme
+    #
+    #     np.random.seed(100)
+    #
+    #     # Initialize integrator keywords for solve_ivp to replicate the odeint defaults
+    #     integrator_keywords = {}
+    #     integrator_keywords['rtol'] = 1e-12
+    #     integrator_keywords['method'] = 'LSODA'
+    #     integrator_keywords['atol'] = 1e-12
+    #
+    #     dt = 0.002
+    #
+    #     t_train = np.arange(0, 10, dt)
+    #     x0_train = [-8, 8, 27]
+    #     t_train_span = (t_train[0], t_train[-1])
+    #     x_train = solve_ivp(
+    #         lorenz, t_train_span, x0_train, t_eval=t_train, **integrator_keywords
+    #     ).y.T
+    #
+    #     t_test = np.arange(0, 15, dt)
+    #     t_test_span = (t_test[0], t_test[-1])
+    #     x0_test = np.array([8, 7, 15])
+    #     x_test = solve_ivp(
+    #         lorenz, t_test_span, x0_test, t_eval=t_test, **integrator_keywords
+    #     ).y.T
+    #
+    #     # print(x_train.shape, t_train.shape, x_test.shape, t_test.shape)
+    #     # 1/0
+    #     # Instantiate and fit the SINDy model
+    #     feature_names = ['x', 'y', 'z']
+    #     sparse_regression_optimizer = ps.STLSQ(threshold=0)  # default is lambda = 0.1
+    #     model = ps.SINDy(feature_names=feature_names, optimizer=sparse_regression_optimizer)
+    #     model.fit(x_train, t=dt)
+    #     model.print()
+    #
+    #     # Make coefficient plot for threshold scan
 
     MAKEFILE = True
     def plot_pareto(coefs, opt, model, threshold_scan, x_test, t_test, degree):
@@ -278,23 +278,40 @@ if hyperparametertuning:
                 f.write(title)
 
         for i, threshold in enumerate(threshold_scan):
+            upper = 1e30
             opt.coef_ = coefs[i]
-            mse[i] = model.score(x_test, t=dt, metric=mean_squared_error)
-            print(f'mse lstsq {i} done, mse[{i}]: {mse[i]}')
+            try:
+                mse[i] = model.score(x_test, t=dt, metric=mean_squared_error)
+            except:
+                print('score UNSUCCESSFUL!!')
+                mse[i] = upper
+                mse[i] = model.score(x_test, t=dt, metric=mean_squared_error)
+            print(f'mse lstsq {i} done, mse[{i}]: {mse[i]:.4e}')
             sim_success = True
             if not skipsim:
+                # upper = 1e4
+                mse_sim[i] = upper
                 try:
                     x_test_sim = model.simulate(x_test[0, :], t_test, integrator="odeint")
                 except:
+                    print('sim UNSUCCESSFUL!!')
                     sim_success = False
-                    mse_sim[i] = np.inf
+                    print('sim_success:', sim_success, 'mse_sim[i]:', mse_sim[i])
+                    # mse_sim[i] = np.inf
+                    # mse_sim[i] = 1e50
                 if sim_success:
-                    if np.any(x_test_sim > 1e4):
-                        x_test_sim = 1e4
-                    mse_sim[i] = np.sum((x_test - x_test_sim) ** 2)
-                else:
-                    mse_sim[i] = np.inf
-                print(f'mse sim {i} done, mse_sim[{i}]: {mse_sim[i]}')
+                        # not np.any(x_test_sim > upper)):
+                    # if np.any(x_test_sim > upper):
+                    #     print('x_test_sim > 1e4!!')
+                    #     print(x_test_sim)
+                    #     x_test_sim = 1e4
+                    #     print('after:', x_test_sim)
+                    mse_sim[i] = min(np.mean((x_test - x_test_sim) ** 2), upper)
+                    # if mse_sim[i] > upper:
+                    #     mse_sim[i] = upper
+
+                    # # print('after:', mse_sim[i])
+                print(f'mse sim {i} done, mse_sim[{i}]: {mse_sim[i]:.4e}')
 
             tuning = f'% {degree} & {threshold:.4e} & {mse[i]:.4e}  & {mse_sim[i]:.4e}  \\\\'
             if MAKEFILE:
@@ -346,10 +363,12 @@ if hyperparametertuning:
     threshold_scan = np.linspace(0.0, 0.000000001, 4)[:2002]
     threshold_scan_std = np.linspace(0, 1.0, 10)[:2002]
     # deg3 = [10**(i) for i in range(-9, -2)]
-    deg2 = list(threshold_scan_std) + [0.1, 0.03, 0.05, 0.025, ]
-    deg3 = list(threshold_scan_std)[3:] + [1e-05, 1.52e-05, 1e-15, ]
+    deg1 = list(threshold_scan_std) + [0, 0.923, 2.24, 3, 4, 10]
+    deg2 = list(threshold_scan_std) + [0.025, 0.03, 0.04, 0.05, 0.1, 1.0]
+    deg2 = [0.04]
+    deg3 = list(threshold_scan_std) + [1e-05, 1.52e-05, 1e-15, ]
     # deg2 = deg2[:3]
-    # deg3 = deg3[:3]
+    deg3 = deg3[:3]
     # thr_std = [(3, thr) for thr in threshold_scan_std] + [(2, thr) for thr in threshold_scan_std]
     # degthr = deg3 + deg2
     # degthr = deg2
@@ -366,7 +385,7 @@ if hyperparametertuning:
     # x_train_added_noise = x_train + np.random.normal(0, rmse / 10.0,  x_train.shape)
 
     x_train_added_noise = x_train
-    for degree, threshold_scan in [(2, deg2), (3, deg3)][1:2]:
+    for degree, threshold_scan in [(1, deg1), (2, deg2), (3, deg3)][2:3]:
         # degree = deg + 2
         for i, threshold in enumerate(threshold_scan):
             # print('inside loop')
@@ -386,8 +405,6 @@ if hyperparametertuning:
             #                  optimizer=sparse_regression_optimizer)
             model.fit(x_train_added_noise, t=dt, quiet=True)
             print(f'fitted: {i}, with thr: {degree, threshold}')
-
-
             coefs.append(model.coefficients())
 
         # print('after loop')
