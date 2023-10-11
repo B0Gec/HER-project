@@ -1,5 +1,6 @@
 import datetime
 import os
+from math import log
 
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
@@ -8,12 +9,14 @@ import numpy as np
 # print(pysindy.__version__, sys.version)
 # print(warnings.filters)
 
-from loadit import loaded, fnamei, fnameii, fnameiii
+from loadit import loaded, fnamei, fnameii, fnameiii, fnameiv, fnamevi
 
 MAKEFILE = True
 
 fname = fnamei
-df = loaded(fname)
+fname = fnameiv
+# df = loaded(fname)
+df = loaded(fname, ppn_only=True)
 # print(df)
 # 1/0
 
@@ -28,14 +31,16 @@ t = np.array(df['t'])
 # X = np.stack((x, y), axis=-1)  # First column is x, second is y
 
 
+scale = 4
+scale = 26
+# scale = 25
+# scale = 30
+# scale = 32
+# scale = 33
+# scale = 35
 # scale = 35  # fail
-scale = 25
-scale = 30
-scale = 32
-scale = 33
-scale = 35
 scale = 36
-scale = 336
+# scale = 336
 
 shift = 0  # standard
 shift = 1   # ignored 'total' column
@@ -47,12 +52,13 @@ X = np.array(df[df.columns[1+shift:scale]])
 # 1 * 10^4 lstmse at 0
 threshold = 0  # mse: 9.9612e+03, mse_sim: inf
 # threshold = 0.923  # mse: 4.7354e+04, mse_sim: 2.0143e+08
-threshold = 1
-# # threshold = 2
-threshold = 2.24
-threshold = 3
-# threshold = 3.5
-
+threshold = 0.1
+# threshold = 1
+# # # threshold = 2
+# threshold = 2.24
+# threshold = 3
+# # threshold = 3.5
+#
 # threshold = 4
 # threshold = 5
 # threshold = 6
@@ -67,8 +73,8 @@ threshold = 3
 # # # threshold = 3e-2
 # # # threshold = 2.5e-2
 # # # threshold = 2e-2
-# # # threshold = 1e-2
-# # # threshold = 0.001
+threshold = 1e-2
+threshold = 0.001
 # # # threshold = 0.0012005   # good
 # # # threshold = 0.0013005   # good
 # # #
@@ -101,6 +107,10 @@ threshold = 3
 # # threshold = 1e-12
 # # threshold = 1e-15
 
+precision = 3
+precision = max(round(-1*log(threshold, 10))+3, 0)
+# precision = 16
+
 degree = 1
 # degree = 2
 degree = 3
@@ -111,15 +121,15 @@ model = ps.SINDy(feature_names=df.columns[1+shift:scale],
                  optimizer = ps.STLSQ(threshold=threshold))
 
 main = True
-main = False
+# main = False
 if main:
+    print('in main')
     model.fit(X, t=t)
 
     # print(model.coefficients())
     print(sum(abs(model.coefficients()[0, :])>0))
 
     total = False if shift == 1 else True
-    precision = 3
     meta = f'\n% filename: {fname}, \'total\' included: {total}, degree: {degree}, threshold: {threshold}, date: {str(datetime.datetime.now())} \n'
     print(meta)
 
@@ -156,36 +166,39 @@ if main:
     dt = np.mean(t[1:] - t[:-1])
     # rmse = mean_squared_error(x_train, np.zeros(x_train.shape), squared=False)
     mse = model.score(x_test, t=dt, metric=mean_squared_error)
+    rmse = mse**0.5
 
 
-    # print('mse lstsq', i, 'done')
+    print('mse lstsq', mse, 'rmse:', rmse, 'done')
     sim_success = True
     try:
         x_test_sim = model.simulate(x_test[0, :], t_test, integrator="odeint")
     except:
         sim_success = False
+        print('simulation failed!!!')
         mse_sim = np.inf
     if sim_success:
-        if np.any(x_test_sim > 1e4):
-            x_test_sim = 1e4
-        mse_sim = np.mean((x_test - x_test_sim) ** 2)
+        x_test_sim = np.array([1e19, 1])
+        if np.any(x_test_sim > 1e14):
+            x_test_sim = 1e14
+        rmse_sim = np.mean((x_test - x_test_sim) ** 2)**0.5
 
-    printmses = f'mse: {mse:.4e}, mse_sim: {mse_sim:.4e}'
-    printmses = f"""
-    with: \\
-        \\verb| mse: {mse:.4e}, mse_sim: {mse_sim:.4e} |\n\n
-    """
+    printmses = f'rmse: {rmse:.4e}, rmse_sim: {rmse_sim:.4e}'
+    # printmses = f"""
+    # with: \\
+    #     \\verb| mse: {mse:.4e}, mse_sim: {mse_sim:.4e} |\n\n
+    # """
     print(printmses)
 
     # print(sum(abs(model.coefficients()[0, :])>0))
 
 
+outdir = f'results_new{os.sep}auto-gen{os.sep}'
 
 MAKEFILE = False
 if MAKEFILE:
 
     vi = fname.split('_')[3]
-    outdir = f'results{os.sep}auto-gen{os.sep}'
     outtxt = f'res_{vi}_{"un"*(not total)}tot{int(total)}_deg{degree}_thr{threshold}.txt'
     outpath = outdir + outtxt
     print(f'results written to {outpath}!!')
@@ -214,9 +227,10 @@ if MAKEFILE:
 
 
 hyperparametertuning = True
-# hyperparametertuning = False
+hyperparametertuning = False
 if hyperparametertuning:
 
+    print('in hypper tunn')
     # lorenz = True
     # lorenz = False
     # if lorenz:
@@ -260,16 +274,17 @@ if hyperparametertuning:
 
     MAKEFILE = True
     def plot_pareto(coefs, opt, model, threshold_scan, x_test, t_test, degree):
+        print('inside plot_pareto')
         dt = t_test[1] - t_test[0]
         mse = np.zeros(len(threshold_scan))
         mse_sim = np.zeros(len(threshold_scan))
         skipsim = True
-        skipsim = False
+        # skipsim = False
         tuning = ""
         title = 'degree | threshold | stslq mse | sim mse\n'
         if MAKEFILE:
             vi = fname.split('_')[3]
-            outdir = f'results{os.sep}auto-gen{os.sep}'
+            outdir = f'results_new{os.sep}auto-gen{os.sep}'
             outtxt = f'tuning_{vi}_deg{degree}.txt'
             outpath = outdir + outtxt
             print(f'tuning table written to {outpath}!!')
@@ -300,6 +315,7 @@ if hyperparametertuning:
                     # mse_sim[i] = np.inf
                     # mse_sim[i] = 1e50
                 if sim_success:
+                    print('sim SUCCESSFUL!!')
                         # not np.any(x_test_sim > upper)):
                     # if np.any(x_test_sim > upper):
                     #     print('x_test_sim > 1e4!!')
@@ -352,6 +368,7 @@ if hyperparametertuning:
             plt.savefig(outpngpath, dpi=300)
             print(f'tunning sim pic written to {outpngpath}!!')
 
+    print('after trys')
     plt.show()
     # plot_pareto()
 
@@ -386,8 +403,10 @@ if hyperparametertuning:
 
     x_train_added_noise = x_train
     for degree, threshold_scan in [(1, deg1), (2, deg2), (3, deg3)][2:3]:
+        print(f'degree: {degree}')
         # degree = deg + 2
         for i, threshold in enumerate(threshold_scan):
+            print(f'  threshold: {threshold}')
             # print('inside loop')
             # print(config)
             # Instantiate and fit the SINDy model
