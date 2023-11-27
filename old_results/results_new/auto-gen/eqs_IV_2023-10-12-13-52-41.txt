@@ -1,0 +1,150 @@
+system of odes for degree: 1 and threshold: 0.0 
+0.0
+(C_3- ppn)' = 0.0000026253257330916 1 + -0.0091835420335713396 C_3- ppn + -0.0210567358365068152 C_4- ppn
+(C_4- ppn)' = 0.0000034317320259511 1 + -0.0112331590966526992 C_3- ppn + -0.0270206468714124307 C_4- ppn
+
+system of odes for degree: 1 and threshold: 0.0011111111111111111 
+0.0011111111111111111
+(C_3- ppn)' = 0.000000
+(C_4- ppn)' = 0.000000
+
+system of odes for degree: 1 and threshold: 0.0022222222222222222 
+0.0022222222222222222
+(C_3- ppn)' = 0.000000
+(C_4- ppn)' = 0.000000
+
+system of odes for degree: 1 and threshold: 0.003333333333333333 
+0.003333333333333333
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 1 and threshold: 0.0044444444444444444 
+0.0044444444444444444
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 1 and threshold: 0.005555555555555556 
+0.005555555555555556
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 1 and threshold: 0.006666666666666666 
+0.006666666666666666
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 1 and threshold: 0.007777777777777777 
+0.007777777777777777
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 1 and threshold: 0.008888888888888889 
+0.008888888888888889
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 1 and threshold: 0.01 
+0.01
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 2 and threshold: 0.0 
+0.0
+(C_3- ppn)' = 0.0000047023114938926 1 + -0.0307470629017662471 C_3- ppn + -0.0185742902574124215 C_4- ppn + -112.1482967361246636528 C_3- ppn^2 + 682.4960663906229001441 C_3- ppn C_4- ppn + -627.5998487668346115242 C_4- ppn^2
+(C_4- ppn)' = 0.0000021773572077338 1 + -0.0086213404811414547 C_3- ppn + -0.0104614601632823118 C_4- ppn + -78.3585220049064332670 C_3- ppn^2 + 322.0066565551138069168 C_3- ppn C_4- ppn + -319.0224974631153713744 C_4- ppn^2
+
+system of odes for degree: 2 and threshold: 0.0011111111111111111 
+0.0011111111111111111
+(C_3- ppn)' = 0.000000
+(C_4- ppn)' = 0.000000
+
+system of odes for degree: 2 and threshold: 0.0022222222222222222 
+0.0022222222222222222
+(C_3- ppn)' = 0.000000
+(C_4- ppn)' = 0.000000
+
+system of odes for degree: 2 and threshold: 0.003333333333333333 
+0.003333333333333333
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 2 and threshold: 0.0044444444444444444 
+0.0044444444444444444
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 2 and threshold: 0.005555555555555556 
+0.005555555555555556
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 2 and threshold: 0.006666666666666666 
+0.006666666666666666
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 2 and threshold: 0.007777777777777777 
+0.007777777777777777
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 2 and threshold: 0.008888888888888889 
+0.008888888888888889
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 2 and threshold: 0.01 
+0.01
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 3 and threshold: 0.0 
+0.0
+(C_3- ppn)' = -0.0000026700810718608 1 + -0.0704024099556855298 C_3- ppn + 0.1957673464678988673 C_4- ppn + 207.7911632578436638141 C_3- ppn^2 + 717.6608948586543874626 C_3- ppn C_4- ppn + -2059.4354594393857951218 C_4- ppn^2 + 269056.6272763947490602732 C_3- ppn^3 + -5710513.2864682702347636223 C_3- ppn^2 C_4- ppn + 10864972.8126212619245052338 C_3- ppn C_4- ppn^2 + -4067003.9970683669671416283 C_4- ppn^3
+(C_4- ppn)' = -0.0000013667829853225 1 + 0.0351336795558507275 C_3- ppn + 0.0091883501910249785 C_4- ppn + -413.0000123875958024655 C_3- ppn^2 + 703.2218859607852436966 C_3- ppn C_4- ppn + -645.6114165860113871531 C_4- ppn^2 + 1193439.6271774431224912405 C_3- ppn^3 + -3600748.3863816033117473125 C_3- ppn^2 C_4- ppn + 4200494.8865436511114239693 C_3- ppn C_4- ppn^2 + -1498864.1041701519861817360 C_4- ppn^3
+
+system of odes for degree: 3 and threshold: 0.0011111111111111111 
+0.0011111111111111111
+(C_3- ppn)' = 0.000000
+(C_4- ppn)' = 0.000000
+
+system of odes for degree: 3 and threshold: 0.0022222222222222222 
+0.0022222222222222222
+(C_3- ppn)' = 0.000000
+(C_4- ppn)' = 0.000000
+
+system of odes for degree: 3 and threshold: 0.003333333333333333 
+0.003333333333333333
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 3 and threshold: 0.0044444444444444444 
+0.0044444444444444444
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 3 and threshold: 0.005555555555555556 
+0.005555555555555556
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 3 and threshold: 0.006666666666666666 
+0.006666666666666666
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 3 and threshold: 0.007777777777777777 
+0.007777777777777777
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 3 and threshold: 0.008888888888888889 
+0.008888888888888889
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+
+system of odes for degree: 3 and threshold: 0.01 
+0.01
+(C_3- ppn)' = 0.00000
+(C_4- ppn)' = 0.00000
+

@@ -1,2 +1,0 @@
-degree | threshold | stslq mse | sim mse
-% 2 & 4.0000e-02 & 1.5386e+05  & 4.8832e+08  \\

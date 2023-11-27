@@ -1,0 +1,7 @@
+- scale=4 for loop through 10 thresholds for deg1 and deg 2. including rmse_sim
+- then decide which thresohld to use
+- decide if add some interesting ths for simple equations
+
+
+results:
+deg 1: try lower thrs
