@@ -1,93 +1,77 @@
+# old init_analisys.py
+
 # library: only +, i.e. linear
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
+
+
+import pysindy as ps
+from sklearn.metrics import mean_squared_error
+
+# nrows = 550
+# ncols = 35
+# x = np.linspace(0, 1, nrows)
+#
+# y = 2 * x + 1
+# Alist = [[i for i in x]] + [[np.random.random() for i in x] for _ in range(ncols-1)]
+# A = np.array(Alist).T
+#
 
 from loadit import loaded, fnameiv, fnamevi, fnameviii, fnamex, fnamexi, fnamexii
 
 fnames = [fnameiv, fnamevi, fnameviii, fnamex, fnamexi, fnamexii]
 fname = fnameiv
-fname_short = fname.split('NEG_Ni ')[-1].split('_AE')[0]
 # fname = fnames[0]
 df = loaded(fname, ppn_only=True)
 # df = loaded(fname, ppn_only=True, notime=False)
 # df = loaded(fname, non_ppn_only=True, ppn_only=False)
+# df = loaded(fname, non_ppn_only=True, ppn_only=False, notime=False)
 cols = list(df.columns)
 print(df)
 
-#
-# print(df.iloc[:3, 1])
-# print(df.iloc[:3, 2])
-# print(df.iloc[:3, 1].corr(df.iloc[:3, 2]))
-# print(pd.DataFrame([1,2,3]).corr(method='pearson'))
-# print(pd.DataFrame({'a': [1,2,3], 'b': [2,4,6]}))
-# dfa = pd.DataFrame({'a': [1,2,3], 'b': [4,4,4]})
-# mia, sia = dfa['a'].mean(), dfa['a'].std()
-# mib, sib = dfa['b'].mean(), dfa['b'].std()
-# print(mia, sia, mib, sib)
-#
-# print(([(dfa['a'][i] - mia)*(dfa['b'][i] - mib) for i in range(dfa.shape[0])]))
-# print(sum([(dfa['a'][i] - mia)*(dfa['b'][i] - mib) for i in range(dfa.shape[0])]))
-# print(sum([(dfa['a'][i] - mia)*(dfa['b'][i] - mib) for i in range(dfa.shape[0])])/((dfa.shape[0]-1)*sia*sib))
-#
-# 1/0
-# print(dfa.corr())
-# print(pd.DataFrame({'a': [1,2,3], 'b': [2,4,6]}).corr())
+# df = loaded(fname, ppn_only=False, notime=False, ignore_total=False)
+# print(df['total'])
+# i1, i2 = 3, 4
+# i1, i2 = 41, 42
+# print(df.iloc[:, i1])
+# print(df.iloc[:, i2])
+# print(df.iloc[:, i1]/df['total'] - df.iloc[:, i2])
+# print((df.iloc[:, i1]/df['total'] - df.iloc[:, i2])[50:80])
+# print(list(abs(df.iloc[:, i1]/df['total'] - df.iloc[:, i2]) > 1e-6).index(True))
+# # print((abs(df.iloc[:, 3]/df['total'] - df.iloc[:, 4]) > 1e-8)[:140])
+# # print((df.iloc[:, 3]/df['total'] - df.iloc[:, 4])[:20])
+
+
+# print(list(df.iloc[208:, 0] < df.iloc[208:, 1]).index(False))
+# print(list(df.iloc[218:, 0] < df.iloc[218:, 1]).index(True))
+# print(list(df.iloc[208:, 0] < df.iloc[208:, 1]))
+# print(max(df.iloc[:, 0]))
+# print(max(df.iloc[:, 1]))
 
 
 
-### correlation matrix heatmap:
-dfcorr = df.corr()
-print(df.corr())
-print(df.corr().iloc[0, 1])
-# 1/0
-# corr = df.corr()
-# df.columns = [i[:-5] for i in df.columns]
-df = df.rename(columns={i: i[:-5] for i in df.columns})
 
-print(df)
-fig, ax = plt.subplots(figsize=(10, 10))
-im = ax.imshow(df.corr())
-plt.title('correlation matrix for ' + fname_short + ' data')
-# ax.set_title("Harvest of local farmers (in tons/year)")
-
-ax.set_xticks(np.arange(len(df.columns)), labels=df.columns)
-ax.set_yticks(np.arange(len(df.columns)), labels=df.columns)
-
-# Rotate the tick labels and set their alignment.
-plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-         rotation_mode="anchor")
-
-# # Loop over data dimensions and create text annotations.
-for i in range(len(df.columns)):
-    for j in range(len(df.columns)):
-        text = ax.text(j, i, f'{df.corr().iloc[i, j]:.1}',
-                       ha="center", va="center", color="w")
-
-fig.tight_layout()
-# plt.show()
-
+t = df['t']
+plt.plot(t, df.iloc[:, 19])
+plt.plot(t, df.iloc[:, 20])
+print(df.columns[19])
+print(df.columns[20])
 
 plt.show()
-
-# sns.heatmap(df.corr(), annot=False)
-# plt.title('heatmap')
-
-# plt.show()
-
 1/0
+fig = plt.figure(figsize=(16, 16))
+x = np.arange(10)
+y = 2.5 * np.sin(x / 20 * np.pi)
+yerr = np.linspace(0.05, 0.2, 10)
 
 
+x = np.arange(len(cols))
 # means = [np.mean(df[col]) for col in cols]
 # means = [min(np.mean(df[col], 0.01) for col in cols if np.mean(df[col]) < 0.01 else 0.01]
 # means = [min(np.mean(df[col]), 0.01) for col in cols]
-# thresh = 100000.002
+thresh = 100000.002
 # thresh = 0.02
 # thresh = 0.002
-thrs = [10**5, 0.02, 0.002]
-thr_idx = 2
-thresh = thrs[thr_idx]
 
 means = [min(np.mean(df[col]), thresh) for col in cols]
 # vars = [np.var(df[col]) for col in cols]
@@ -100,7 +84,6 @@ vars = [np.var(df[col]) if (np.mean(df[col]) < thresh) else 0 for col in cols]
 # print(df[[col for col in cols if max(df[col]) < 0.02]])
 selection = [col for col in cols if max(df[col]) < thresh]
 # selection = selection[:2]
-print(f'number of fragments in the selection: {len(selection)}')
 
 # plt.boxplot(df[selection], labels=[i[:-5] for i in selection])
 
@@ -127,14 +110,6 @@ print(f'number of fragments in the selection: {len(selection)}')
 #
 
 # plt.scatter(xs, ys, label='both limits (default)')
-
-plt.subplots(figsize=(13, 13))
-# 14, 7, 12
-
-if thr_idx > 0:
-    plt.plot([0+1, len(selection)], [thresh, thresh], 'r--', label='threshold')
-if thr_idx < len(thrs)-1:
-    plt.plot([0+1, len(selection)], [thrs[thr_idx+1], thrs[thr_idx+1]], 'r--', label='threshold')
 
 for n, sel in enumerate(selection):
     # plt.scatter([sel[:-5]]*df.shape[0], df[sel], label=sel[:-5], marker='x')

@@ -1,3 +1,10 @@
+
+one small separate experiments:
+only Ni- ppn and ^60Ni- ppn present, -> Ni = 2 * ^60Ni- ppn, and ^60Ni = 0.5 * Ni- ppn
+
+
+main experiments:
+
 threshold 0.8 = 0.9
 
 O = 1.3 NiO
